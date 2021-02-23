@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+flask-sqlalchemy = "*"
+flask-wtf = "*"
+email-validator = "*"
+flask-login = "*"
+flask-socketio = "*"
+eventlet = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

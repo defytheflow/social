@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %} Login {% endblock %}
+
+{% block content %}
+<div class="container mx-auto w-50 d-flex align-items-center" style="height: 85%">
+  <div class="container">
+    <h1 class="text-center">Login</h1>
+    <form action="{{ url_for('login') }}" method="POST" autocomplete='off' class="d-flex flex-column align-items-center">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group col-sm-10 col-lg-5">
+          <label for="username">{{ form.username.label }}</label>
+          {{ form.username(class="form-control") }}
+        </div>
+
+        <div class="form-group col-sm-10 col-lg-5">
+          <label for="username">{{ form.password.label }}</label>
+          {{ form.password(class="form-control") }}
+        </div>
+
+        {{ form.submit(class="btn btn-success mt-2") }}
+      </form>
+    
+    <p class="text-center">Don't have an account? <a href="{{ url_for('register') }}">Click here</a></p>
+  </div>
+</div>
+{% endblock %}
