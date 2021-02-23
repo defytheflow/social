@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired, FileAllowed
+from flask_wtf.file import FileAllowed, FileField, FileRequired
+from wtforms import PasswordField, StringField, SubmitField
+from wtforms.validators import (DataRequired, Email, EqualTo, Length, ValidationError)
 
-from wtforms import StringField, SubmitField, PasswordField
-from wtforms.validators import DataRequired, Length, EqualTo, Email, ValidationError
+from .models import User
 
-from models import User
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -15,9 +15,15 @@ class LoginForm(FlaskForm):
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=64)])
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=255)])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=8, max=128)])
-    confirm_password = PasswordField('Confirm Password', validators=[
-        DataRequired(), EqualTo('password', message='Passwords do not match.')])
+    password = PasswordField('Password',
+                             validators=[DataRequired(),
+                                         Length(min=8, max=128)])
+    confirm_password = PasswordField('Confirm Password',
+                                     validators=[
+                                         DataRequired(),
+                                         EqualTo('password',
+                                                 message='Passwords do not match.')
+                                     ])
     submit = SubmitField('Create account')
 
     def validate_username(self, field):
@@ -35,5 +41,7 @@ class MessageCreateForm(FlaskForm):
 
 
 class ChangeAvatarForm(FlaskForm):
-    image = FileField(validators=[FileRequired(), FileAllowed(['png', 'jpg', 'jpeg'], 'Images only!')])
+    image = FileField(
+        validators=[FileRequired(),
+                    FileAllowed(['png', 'jpg', 'jpeg'], 'Images only!')])
     submit = SubmitField('Save')

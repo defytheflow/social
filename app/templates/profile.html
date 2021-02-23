@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %} {{ username }} {% endblock %}
+{% block title %} Social • {{ user.username }} {% endblock %}
 
 {% block content %}
   <h1>Profile</h1>
@@ -10,7 +10,7 @@
     <h5 class="card-title">{{ user.username }}</h5>
     <p class="card-text"></p>
     {% if user != current_user %}
-      {% if user not in current_user.all_friends %}
+      {% if user not in current_user.friends %}
       <form action="{{ url_for('add_friend', username=user.username)}}" method='POST'>
         <button type='submit' class="btn btn-success">Add friend</button>
       </form>
@@ -26,20 +26,20 @@
   {% if current_user == user %}
     <h2>My Friends</h2>
     <ul class="list-group">
-      {% for friend in current_user.all_friends %}
+      {% for friend in current_user.friends %}
         <li class="list-group-item d-flex align-items-center">
           <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image">
-          <a class="mx-2 h5" href="{{ friend.get_absolute_url() }}">{{ friend.username }}</a>
+          <a class="mx-2 h5" href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
         </li>
       {% endfor %}
     </ul>
   {% else %}
     <h2>Friends</h2>
     <ul class="list-group">
-      {% for friend in user.all_friends %}
+      {% for friend in user.friends %}
         <li class="list-group-item d-flex align-items-center">
           <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image">
-          <a class="mx-2 h5" href="{{ friend.get_absolute_url() }}">{{ friend.username }}</a>
+          <a class="mx-2 h5" href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
         </li>
       {% endfor %}
     </ul>

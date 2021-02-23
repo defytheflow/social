@@ -11,8 +11,10 @@ email-validator = "*"
 flask-login = "*"
 flask-socketio = "*"
 eventlet = "*"
+python-dotenv = "*"
 
 [dev-packages]
+pytest = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
