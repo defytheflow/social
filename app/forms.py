@@ -7,12 +7,14 @@ from .models import User
 
 
 class LoginForm(FlaskForm):
+
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Log in')
 
 
 class RegisterForm(FlaskForm):
+
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=64)])
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=255)])
     password = PasswordField('Password',
@@ -36,11 +38,13 @@ class RegisterForm(FlaskForm):
 
 
 class MessageCreateForm(FlaskForm):
+
     body = StringField('Body', validators=[DataRequired()])
     submit = SubmitField('Send message')
 
 
 class ChangeAvatarForm(FlaskForm):
+
     image = FileField(
         validators=[FileRequired(),
                     FileAllowed(['png', 'jpg', 'jpeg'], 'Images only!')])

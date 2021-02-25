@@ -1,19 +1,18 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% import "bootstrap/utils.html" as utils %}
 
 {% block title %} Social • {{ user.username }} {% endblock %}
 
-{% block content %}
+{% block main %}
   <h1>Profile</h1>
   <div class="card" style="width: 18rem;">
-  <img width="200" height="250" src="{{ user.image_url }}" class="card-img-top rounded" alt="...">
+  <img width="200" height="250" src="{{ user.image_url }}" class="card-img-top rounded" alt="user's avatar">
   <div class="card-body">
     <h5 class="card-title">{{ user.username }}</h5>
-    <p class="card-text"></p>
+    <p class="card-text">{{ user.about }}</p>
     {% if user != current_user %}
       {% if user not in current_user.friends %}
-      <form action="{{ url_for('add_friend', username=user.username)}}" method='POST'>
-        <button type='submit' class="btn btn-success">Add friend</button>
-      </form>
+        {{ utils.form_button(url_for('add_friend', username=user.username), 'Add friend', class='btn btn-success') }}
       {% else %}
         <a href="{{ url_for('chat_with', username=user.username) }}" class="btn btn-primary">Chat</a>
       {% endif %}
@@ -27,13 +26,13 @@
   <ul class="list-group">
     {% for friend in user.friends %}
       <li class="list-group-item d-flex align-items-center">
-        <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image">
-        <a class="mx-2 h5" href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
-        <form style="margin-left: auto;" method="post" action="{{ url_for('delete_friend', username=friend.username) }}">
-          <button type="submit"  class="btn btn-danger btn-sm">
-            Delete
-          </button>
-        </form>
+        <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image" />
+        <a href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
+        {% if user == current_user %}
+          <span style="margin-left: auto;">
+            {{ utils.form_button(url_for('delete_friend', username=friend.username), 'Delete', class='btn btn-danger') }}
+          </span>
+        {% endif %}
       </li>
     {% endfor %}
   </ul>

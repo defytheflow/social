@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
@@ -6,6 +7,8 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('config')
 
 db = SQLAlchemy(app)
+
+Bootstrap(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

@@ -1,5 +1,9 @@
-{% extends 'base.html' %} {% block title %} Chat with {{ user.username }} {%
-endblock %} {% block content %}
+{% extends 'base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}  Social • chat with {{ user.username }} {% endblock %}
+
+{% block main %}
 <h1>Chat with {{ user.username }}</h1>
 <ul class="list-group">
   {% for message in messages %}
@@ -30,28 +34,18 @@ endblock %} {% block content %}
   </li>
   {% endfor %}
 </ul>
-<form
-  action="{{ url_for('chat_with', username=user.username) }}"
-  method="POST"
-  autocomplete="off"
-  novalidate="true"
->
-  {{ form.hidden_tag() }}
 
-  <div class="form-group">
-    <label for="body">{{ form.body.label }}</label>
-    {{ form.body(class="form-control")}}
-    <small class="form-text text-muted">{{ form.body.errors[0] }}</small>
-  </div>
+{{ wtf.quick_form(form, action=url_for('chat_with', username=user.username), button_map={'submit': 'success'}) }}
 
-  {{ form.submit(class="btn btn-success mt-2") }}
-</form>
+{% block scripts %}
+  {{ super() }}
+  <script
+    src="https://cdn.socket.io/3.1.1/socket.io.min.js"
+    integrity="sha384-gDaozqUvc4HTgo8iZjwth73C6dDDeOJsAgpxBcMpZYztUfjHXpzrpdrHRdVp8ySO"
+    crossorigin="anonymous"
+  ></script>
+{% endblock %}
 
-<script
-  src="https://cdn.socket.io/3.1.1/socket.io.min.js"
-  integrity="sha384-gDaozqUvc4HTgo8iZjwth73C6dDDeOJsAgpxBcMpZYztUfjHXpzrpdrHRdVp8ySO"
-  crossorigin="anonymous"
-></script>
 <script type="text/javascript" charset="utf-8">
   var socket = io();
 

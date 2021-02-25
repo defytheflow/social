@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %} Users {% endblock %}
+{% block title %} Social • Users {% endblock %}
 
-{% block content %}
+{% block main %}
   {% if not users %}
-    <h1>No users in database</h1>
+    <h1>No users in the database.</h1>
   {% else %}
-  <h1>Users</h1>
-  <ul class="list-group">
-    {% for user in users %}
-      <li class="list-group-item d-flex align-items-center">
-        <img class="rounded" width="75" height="75" src="{{ user.image_url }}" alt="user's image">
-        <a class="mx-2 h5" href="{{ user.get_profile_url() }}">{{user.username}}</a>
-      </li>
-    {% endfor %}
-  </ul>
+    <h1>Users</h1>
+    <ul class="list-group">
+      {% for user in users %}
+        <li class="list-group-item d-flex align-items-center">
+          <img class="rounded" width="75" height="75" src="{{ user.image_url }}" alt="user's image">
+          <a class="mx-2 h5" href="{{ user.get_profile_url() }}">{{ user.username }}</a>
+        </li>
+      {% endfor %}
+    </ul>
   {% endif %}
 {% endblock %}

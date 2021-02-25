@@ -1,17 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %} {% endblock %}
+{% block title %} Social • Chats {% endblock %}
 
-{% block content %}
+{% block main %}
   <h1>Chats</h1>
-
-  <ul class="list-group">
-  {% for friend in current_user.friends %}
-    <li class="list-group-item d-flex align-items-center">
+  {% if not current_user.friends %}
+    <h1>You don't have any friends to chat with :(</h1>
+  {% else %}
+    <ul class="list-group">
+    {% for friend in current_user.friends %}
+      <li class="list-group-item d-flex align-items-center">
         <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image">
         <a class="mx-2 h5" href="{{ url_for('chat_with', username=friend.username )}}">{{ friend.username }}</a>
-    </li>
-  {% endfor %}
-  </ul>
-
+      </li>
+    {% endfor %}
+    </ul>
+  {% endif %}
 {% endblock %}

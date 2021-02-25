@@ -12,6 +12,7 @@ flask-login = "*"
 flask-socketio = "*"
 eventlet = "*"
 python-dotenv = "*"
+flask-bootstrap4 = "*"
 
 [dev-packages]
 pytest = "*"
