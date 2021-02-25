@@ -82,26 +82,30 @@ class User(UserMixin, db.Model):
     requested_friendships = db.relationship(
         'FriendshipRequest',
         foreign_keys='FriendshipRequest.requesting_user_id',
-        backref='requesting_user')
+        backref='requesting_user',
+        lazy='dynamic')
 
     received_friendships = db.relationship(
         'FriendshipRequest',
         foreign_keys='FriendshipRequest.receiving_user_id',
-        backref='receiving_user')
+        backref='receiving_user',
+        lazy='dynamic')
 
     aspiring_friends = association_proxy('received_friendships', 'requesting_user')
     desired_friends = association_proxy('requested_friendships', 'receiving_user')
 
-    _friendships1 = db.relationship('Friendship',
-                                    foreign_keys='Friendship.user1_id',
-                                    backref='user1')
+    friendships1 = db.relationship('Friendship',
+                                   foreign_keys='Friendship.user1_id',
+                                   backref='user1',
+                                   lazy='dynamic')
 
-    _friendships2 = db.relationship('Friendship',
-                                    foreign_keys='Friendship.user2_id',
-                                    backref='user2')
+    friendships2 = db.relationship('Friendship',
+                                   foreign_keys='Friendship.user2_id',
+                                   backref='user2',
+                                   lazy='dynamic')
 
-    _friends1 = association_proxy('_friendships1', 'user2')
-    _friends2 = association_proxy('_friendships2', 'user1')
+    friends1 = association_proxy('friendships1', 'user2')
+    friends2 = association_proxy('friendships2', 'user1')
 
     sent_messages = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
@@ -126,12 +130,12 @@ class User(UserMixin, db.Model):
     @property
     def friendships(self):
         # TODO: BAD!
-        return self._friendships1 + self._friendships2
+        return self.friendships1.all() + self.friendships2.all()
 
     @property
     def friends(self):
         # TODO: BAD!
-        return self._friends1 + self._friends2
+        return self.friends1 + self.friends2
 
     def get_friends(self):
         users1 = db.session.query(Friendship.user2).filter(Friendship.user1 == self)

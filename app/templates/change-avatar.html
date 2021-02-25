@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% from "bootstrap/form.html" import render_form %}
 
 {% block title %} Social • Change avatar {% endblock %}
 
-{% block main %}
+{% block content %}
   <div class="container mx-auto">
     <h1 class="text-center">Change avatar</h1>
-    {{ wtf.quick_form(form, action=url_for('change_avatar'), button_map={'submit': 'success'}) }}
+    {{ render_form(form, url_for('change_avatar'), button_style='success') }}
   </div>
 {% endblock %}

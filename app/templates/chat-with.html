@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% from "bootstrap/form.html" import render_form %}
 
 {% block title %}  Social • chat with {{ user.username }} {% endblock %}
 
-{% block main %}
+{% block content %}
 <h1>Chat with {{ user.username }}</h1>
 <ul class="list-group">
   {% for message in messages %}
@@ -35,7 +35,7 @@
   {% endfor %}
 </ul>
 
-{{ wtf.quick_form(form, action=url_for('chat_with', username=user.username), button_map={'submit': 'success'}) }}
+{{ render_form(form, url_for('chat_with', username=user.username), button_style='success') }}
 
 {% block scripts %}
   {{ super() }}
@@ -44,18 +44,18 @@
     integrity="sha384-gDaozqUvc4HTgo8iZjwth73C6dDDeOJsAgpxBcMpZYztUfjHXpzrpdrHRdVp8ySO"
     crossorigin="anonymous"
   ></script>
+
+  <script type="text/javascript" charset="utf-8">
+    var socket = io();
+
+    socket.on("connect", (e) => {
+      var username = window.location.pathname.split("/").pop();
+      socket.emit("join", { with: username });
+    });
+
+    socket.on("message", (e) => {
+      console.log("message:", e);
+    });
+  </script>
 {% endblock %}
-
-<script type="text/javascript" charset="utf-8">
-  var socket = io();
-
-  socket.on("connect", (e) => {
-    var username = window.location.pathname.split("/").pop();
-    socket.emit("join", { with: username });
-  });
-
-  socket.on("message", (e) => {
-    console.log("message:", e);
-  });
-</script>
 {% endblock %}

@@ -2,7 +2,7 @@
 
 {% block title %} Social • Users {% endblock %}
 
-{% block main %}
+{% block content %}
   {% if not users %}
     <h1>No users in the database.</h1>
   {% else %}
@@ -10,8 +10,16 @@
     <ul class="list-group">
       {% for user in users %}
         <li class="list-group-item d-flex align-items-center">
+
           <img class="rounded" width="75" height="75" src="{{ user.image_url }}" alt="user's image">
           <a class="mx-2 h5" href="{{ user.get_profile_url() }}">{{ user.username }}</a>
+
+          {% if user in current_user.desired_friends %}
+            <span class='alert alert-secondary ml-auto'>Friendship request sent</span>
+          {% elif user in current_user.friends %}
+            <span class='alert alert-success ml-auto'>Your Friend</span>
+          {% endif %}
+
         </li>
       {% endfor %}
     </ul>

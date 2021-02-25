@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% from "bootstrap/form.html" import render_form %}
 
 {% block title %} Social • Register {% endblock %}
 
-{% block main %}
+{% block content %}
 <div class="container d-flex" style="height: 90%;">
   <div class="container align-self-center">
     <h1 class="text-center">Register</h1>
-    {{ wtf.quick_form(form, action=url_for('register'), button_map={'submit': 'success'}) }}
+    {{ render_form(form, url_for('register'), button_style='success', novalidate=True) }}
     <p class="text-center">Already have an account?
       <a href="{{ url_for('login') }}">Click here</a>
     </p>
@@ -16,53 +16,54 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  function insertAfter(element, what) {
-    element.parentNode.insertBefore(what, element.nextSibling);
-  }
+  {{ super() }}
+  <script>
+    function insertAfter(element, what) {
+      element.parentNode.insertBefore(what, element.nextSibling);
+    }
 
-  const username = document.querySelector('#username');
-  const password = document.querySelector('#password');
-  const password2 = document.querySelector('#confirm_password');
+    const username = document.querySelector('#username');
+    const password = document.querySelector('#password');
+    const password2 = document.querySelector('#confirm_password');
 
-  username.onkeyup = () => {
-    fetch(`/check-unique?username=${username.value}`)
-    .then(res => res.json())
-    .then(data => {
-      const error = document.querySelector('#username-helper') ?? document.createElement('span');
-      if (!data.username) {
-        error.id = 'username-helper';
-        error.innerText = 'User with his username already exists.';
+    username.onkeyup = () => {
+      fetch(`/check-unique?username=${username.value}`)
+      .then(res => res.json())
+      .then(data => {
+        const error = document.querySelector('#username-helper') ?? document.createElement('span');
+        if (!data.username) {
+          error.id = 'username-helper';
+          error.innerText = 'User with his username already exists.';
+          error.className = 'text-danger';
+          insertAfter(username, error);
+        } else {
+          error.remove();
+        }
+      })
+    }
+
+    password.onblur = () => {
+      const error = document.querySelector('#password-helper') ?? document.createElement('span');
+      if (password.value.length < 8) {
+        error.id = 'password-helper';
+        error.innerText = 'Password must have at least 8 characters.'
         error.className = 'text-danger';
-        insertAfter(username, error);
+        insertAfter(password, error);
       } else {
         error.remove();
       }
-    })
-  }
-
-  password.onblur = () => {
-    const error = document.querySelector('#password-helper') ?? document.createElement('span');
-    if (password.value.length < 8) {
-      error.id = 'password-helper';
-      error.innerText = 'Password must have at least 8 characters.'
-      error.className = 'text-danger';
-      insertAfter(password, error);
-    } else {
-      error.remove();
     }
-  }
 
-  password2.onblur = () => {
-    const error = document.querySelector('#confirm-password-helper') ?? document.createElement('span');
-    if (password2.value !== password.value) {
-      error.id = 'confirm-password-helper';
-      error.innerText = 'Password do not match.'
-      error.className = 'text-danger';
-      insertAfter(password2, error);
-    } else {
-      error.remove();
+    password2.onblur = () => {
+      const error = document.querySelector('#confirm-password-helper') ?? document.createElement('span');
+      if (password2.value !== password.value) {
+        error.id = 'confirm-password-helper';
+        error.innerText = 'Password do not match.'
+        error.className = 'text-danger';
+        insertAfter(password2, error);
+      } else {
+        error.remove();
+      }
     }
-  }
-</script>
+  </script>
 {% endblock %}

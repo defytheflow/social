@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 
 from . import app, db
 from .forms import ChangeAvatarForm, LoginForm, MessageCreateForm, RegisterForm
-from .models import Friendship, Message, User
+from .models import Friendship, FriendshipRequest, Message, User
 from .utils import anonymous_required
 
 
@@ -116,20 +116,50 @@ def send_avatar(username):
     return send_from_directory(app.config['UPLOAD_FOLDER'], user.image)
 
 
-@app.route('/add-friend/<username>', methods=['POST'])
+@app.route('/request-friend/<username>', methods=['POST'])
 @login_required
-def add_friend(username):
+def request_friend(username):
     user = User.query.filter_by(username=username).first_or_404()
 
     if user in current_user.friends:
-        flash(f'You and {user.username} are already friends!', 'info')
-        return redirect(current_user.get_profile_url())
+        abort(400)
 
-    friendship = Friendship(user1_id=current_user.id, user2_id=user.id)
+    friend_request = FriendshipRequest(receiving_user_id=user.id)
+    current_user.requested_friendships.append(friend_request)
+
+    db.session.add(current_user)
+    db.session.commit()
+
+    return redirect(user.get_profile_url())
+
+
+@app.route('/accept-friend/<username>', methods=['POST'])
+@login_required
+def accept_friend(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    if user in current_user.friends:
+        abort(400)
+
+    current_user.received_friendships.filter_by(requesting_user=user).delete()
+    friendship = Friendship(user1=current_user, user2=user)
+
     db.session.add(friendship)
     db.session.commit()
 
-    flash(f'{username} has been added to your friends!', 'info')
+    return redirect(current_user.get_profile_url())
+
+
+@app.route('/refuse-friend/<username>', methods=['POST'])
+@login_required
+def refuse_friend(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    if user in current_user.friends:
+        abort(400)
+
+    current_user.received_friendships.filter_by(requesting_user=user).delete()
+
     return redirect(current_user.get_profile_url())
 
 
@@ -138,10 +168,8 @@ def add_friend(username):
 def delete_friend(username):
     user = User.query.filter_by(username=username).first_or_404()
 
-    Friendship.query.filter((Friendship.user1_id == current_user.id) &
-                            (Friendship.user2_id == user.id) |
-                            (Friendship.user2_id == current_user.id) &
-                            (Friendship.user1_id == user.id)).delete()
+    current_user.friendships1.filter_by(user2=user).delete()
+    current_user.friendships2.filter_by(user1=user).delete()
 
     flash(f'{username} has been deleted from your friends!', 'info')
     return redirect(current_user.get_profile_url())
