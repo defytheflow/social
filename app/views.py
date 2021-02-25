@@ -57,6 +57,19 @@ def check_unique():
         return jsonify({'username': False})
 
 
+@app.route('/update-about', methods=['POST'])
+def update_about():
+    about = request.get_json().get('about')
+
+    if about is not None:
+        current_user.about = about
+        db.session.add(current_user)
+        db.session.commit()
+        return jsonify({ 'about': about })
+
+    return jsonify({'about': None})
+
+
 @app.route('/register', methods=['GET', 'POST'])
 @anonymous_required
 def register():

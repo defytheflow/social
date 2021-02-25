@@ -12,7 +12,7 @@ flask-migrate    = "*"
 flask-socketio   = "*"
 eventlet         = "*"
 python-dotenv    = "*"
-bootstrap-flask = "*"
+bootstrap-flask  = "*"
 
 [dev-packages]
 pytest = "*"

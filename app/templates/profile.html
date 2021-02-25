@@ -3,32 +3,38 @@
 
 {% block content %}
   <h1>Profile</h1>
-  <div class="card" style="width: 18rem;">
-  <img width="200" height="250" src="{{ user.image_url }}" class="card-img-top rounded" alt="user's avatar">
-  <div class="card-body">
-    <h5 class="card-title">{{ user.username }}</h5>
-    <p class="card-text">{{ user.about }}</p>
+  <div class="d-flex justify-content-start">
+    <div class="card w-50 p-2">
+      <img src="{{ user.image_url }}" class="card-img-top rounded" alt="user's avatar">
+      <div class="card-body">
+        <h5 class="card-title">{{ user.username }}</h5>
+        <p class="card-text"></p>
 
-    {% if user != current_user %}
+        {% if user != current_user %}
 
-      {% if user in current_user.desired_friends %}
-        <span class='alert alert-secondary'>Friendship request sent</span>
+          {% if user in current_user.desired_friends %}
+            <span class='alert alert-secondary'>Friendship request sent</span>
 
-      {% elif user not in current_user.friends %}
-        <form action="{{ url_for('request_friend', username=user.username) }}" method="post">
-          <button type="submit" class="btn btn-success">Add friend</button>
-        </form>
+          {% elif user not in current_user.friends %}
+            <form action="{{ url_for('request_friend', username=user.username) }}" method="post">
+              <button type="submit" class="btn btn-success">Add friend</button>
+            </form>
 
-      {% else %}
-        <a href="{{ url_for('chat_with', username=user.username) }}" class="btn btn-primary">Chat</a>
-      {% endif %}
+          {% else %}
+            <a href="{{ url_for('chat_with', username=user.username) }}" class="btn btn-primary">Chat</a>
+          {% endif %}
 
-    {% else %}
-      <a class="btn btn-success" href="{{ url_for('change_avatar')}}">Change avatar</a>
-    {% endif %}
-
+        {% else %}
+          <a class="btn btn-success" href="{{ url_for('change_avatar')}}">Change avatar</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card ml-3 w-50 p-3">
+      <h4>About</h2>
+      <p id="user-about">{{ user.about }}</p>
+      <button id="user-about-edit" class="btn btn-primary" style="width: 30%;">Edit</button>
+    </div>
   </div>
-</div>
 
 {% if user == current_user or user in current_user.friends %}
   <h2>Friends</h2>
@@ -84,4 +90,45 @@
   </ul>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const edit = document.querySelector('#user-about-edit');
+
+  edit.onclick = () => {
+    const about = document.querySelector('#user-about');
+    const textarea = document.querySelector('#user-about-textarea') ?? document.createElement('textarea');
+    if (edit.innerText.toLowerCase() == 'save') {
+      // save new about.
+      fetch('/update-about', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({'about': textarea.value})
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.about) {
+          const about = document.createElement('p');
+          about.id = 'user-about';
+          about.innerText = data.about;
+          edit.parentNode.insertBefore(about, edit);
+          textarea.remove();
+          edit.innerText = 'Edit';
+        }
+      })
+    } else {
+      textarea.id = 'user-about-textarea';
+      textarea.cols = 30;
+      textarea.rows = 5;
+      textarea.defaultValue = about.innerText; 
+      // insert textarea.
+      about.parentNode.insertBefore(textarea, about.nextSibling);
+      about.remove();
+      edit.innerText = 'Save';
+    }
+  }
+</script>
 {% endblock %}
