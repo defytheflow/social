@@ -126,6 +126,24 @@ def add_friend(username):
     return redirect(current_user.get_profile_url())
 
 
+@app.route('/delete-friend/<string:username>', methods=['POST'])
+@login_required
+def delete_friend(username):
+    user = User.query.filter_by(username=username).first()
+
+    if user is None:
+        flash("User with username '{username}' does not exist!")
+        return redirect(current_user.get_profile_url())
+
+    Friendship.query.filter((Friendship.user1_id == current_user.id) &
+                            (Friendship.user2_id == user.id) |
+                            (Friendship.user2_id == current_user.id) &
+                            (Friendship.user1_id == user.id)).delete()
+
+    flash(f'Friend {username} has been deleted!', 'info')
+    return redirect(current_user.get_profile_url())
+
+
 @app.route('/users')
 @login_required
 def users():
