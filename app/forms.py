@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from wtforms import PasswordField, StringField, SubmitField
-from wtforms.validators import (DataRequired, Email, EqualTo, Length, ValidationError)
+from wtforms.validators import DataRequired, EqualTo, Length, ValidationError
 
 from .models import User
 
@@ -16,7 +16,6 @@ class LoginForm(FlaskForm):
 class RegisterForm(FlaskForm):
 
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=64)])
-    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=255)])
     password = PasswordField('Password',
                              validators=[DataRequired(),
                                          Length(min=8, max=128)])
@@ -31,10 +30,6 @@ class RegisterForm(FlaskForm):
     def validate_username(self, field):
         if User.query.filter_by(username=field.data).first() is not None:
             raise ValidationError('User with this username already exists.')
-
-    def validate_email(self, field):
-        if User.query.filter_by(email=field.data).first() is not None:
-            raise ValidationError('User with this email already exists.')
 
 
 class MessageCreateForm(FlaskForm):
