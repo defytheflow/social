@@ -2,6 +2,7 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, instance_relative_config=True)
@@ -10,6 +11,7 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bootstrap = Bootstrap(app)
+socketio = SocketIO(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

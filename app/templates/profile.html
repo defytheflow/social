@@ -21,7 +21,7 @@
             </form>
 
           {% else %}
-            <a href="{{ url_for('chat_with', username=user.username) }}" class="btn btn-primary">Chat</a>
+            <a href="{{ url_for('chat', username=user.username) }}" class="btn btn-primary">Chat</a>
           {% endif %}
 
         {% else %}
@@ -123,7 +123,7 @@
       textarea.id = 'user-about-textarea';
       textarea.cols = 30;
       textarea.rows = 5;
-      textarea.defaultValue = about.innerText; 
+      textarea.defaultValue = about.innerText;
       // insert textarea.
       about.parentNode.insertBefore(textarea, about.nextSibling);
       about.remove();

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% from "bootstrap/form.html" import render_form %}
+
+{% block title %}  Social • chat with {{ user.username }} {% endblock %}
+
+{% block content %}
+<h1>Chat with {{ user.username }}</h1>
+<ul id='messages-list' class="list-group">
+  {% for message in messages %}
+  <li class="list-group-item">
+    <div class="card">
+      <div
+        class="card-header"
+        style="{% if message.sender == current_user %} text-align: right; {% endif %}"
+      >
+        {% if message.sender == current_user %} You {% else %}
+        <img
+          width="35"
+          height="35"
+          style="border-radius: 100px"
+          src="{{ message.sender.image_url }}"
+          alt="..."
+        />
+        {{ message.sender.username }} {% endif %}
+      </div>
+      <div
+        class="card-body"
+        style="{% if message.sender == current_user %}text-align: right;{% endif %}"
+      >
+        <p class="card-text">{{ message.body }}</p>
+        <span style="float: right">{{ message.formatted_created_at }}</span>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+
+{{ render_form(form, button_style='success', id='message-create-form', render_kw={'autocomplete': 'off'}) }}
+{% endblock %}
+
+{% block scripts %}
+  <script
+    src="https://cdn.socket.io/3.1.1/socket.io.min.js"
+    integrity="sha384-gDaozqUvc4HTgo8iZjwth73C6dDDeOJsAgpxBcMpZYztUfjHXpzrpdrHRdVp8ySO"
+    crossorigin="anonymous"
+  ></script>
+  <script type="text/javascript">
+    (function () {
+      const socket = io('/chat');
+
+      const form = document.querySelector('#message-create-form');
+      const body = document.querySelector('#body');
+      const messages = document.querySelector('#messages-list');
+
+      const current_username = '{{ current_user.username }}';
+      const recipient = window.location.pathname.split('/').pop();
+
+      socket.on('connect', () => {
+        console.log('connect');
+      });
+
+      socket.on('message', e => {
+        switch (e.type) {
+          case 'update': {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            const cardHeader = document.createElement('div');
+            cardHeader.className = 'card-header';
+            if (e.data.sender.username == current_username) {
+              cardHeader.style.textAlign = 'right';
+            }
+
+            if (e.data.sender.username == current_username) {
+              cardHeader.appendChild(document.createTextNode('You'));
+            } else {
+              const img = document.createElement('img');
+              img.witdh = '35';
+              img.height = '35';
+              img.style.borderRadius = '100px';
+              img.src = e.data.sender.imageUrl;
+              cardHeader.appendChild(img);
+            }
+
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
+            if (e.data.sender.username == current_username) {
+              cardBody.style.textAlign = 'right';
+            }
+
+            const cardText = document.createElement('p');
+            cardText.innerText = e.data.body;
+
+            const createdAt = document.createElement('span');
+            createdAt.style.float = 'right';
+            createdAt.innerText = e.data.createdAt;
+
+            cardBody.appendChild(cardText);
+            cardBody.appendChild(createdAt);
+
+            card.appendChild(cardHeader);
+            card.appendChild(cardBody);
+
+            li.appendChild(card);
+            messages.appendChild(li);
+          }
+        }
+      });
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const data = { recipient, body: body.value };
+        socket.emit('message', data);
+        form.reset();
+      });
+    })();
+  </script>
+{% endblock %}

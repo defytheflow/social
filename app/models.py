@@ -110,11 +110,13 @@ class User(UserMixin, db.Model):
 
     sent_messages = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
-                                    backref='sender')
+                                    backref='sender',
+                                    lazy='dynamic')
 
     received_messages = db.relationship('Message',
                                         foreign_keys='Message.recipient_id',
-                                        backref='recipient')
+                                        backref='recipient',
+                                        lazy='dynamic')
 
     def __repr__(self):
         return f'<User {self.username}>'

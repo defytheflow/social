@@ -3,12 +3,13 @@ import os
 from flask import (abort, flash, jsonify, redirect, render_template, request,
                    send_from_directory, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
+from flask_socketio import emit
 from werkzeug.utils import secure_filename
 
-from . import app, db
+from . import app, db, socketio
 from .forms import ChangeAvatarForm, LoginForm, MessageCreateForm, RegisterForm
 from .models import Friendship, FriendshipRequest, Message, User
-from .utils import anonymous_required
+from .utils import anonymous_required, authenticated_only
 
 
 @app.errorhandler(404)
@@ -65,7 +66,7 @@ def update_about():
         current_user.about = about
         db.session.add(current_user)
         db.session.commit()
-        return jsonify({ 'about': about })
+        return jsonify({'about': about})
 
     return jsonify({'about': None})
 
@@ -201,28 +202,70 @@ def chats():
     return render_template('chats.html')
 
 
-@app.route('/chats/<username>', methods=['GET', 'POST'])
+@app.route('/chats/<username>', methods=['GET'])
 @login_required
-def chat_with(username):
+def chat(username):
     user = User.query.filter_by(username=username).first_or_404()
 
     if user not in current_user.friends:
         abort(404)
 
     form = MessageCreateForm()
-
-    if form.validate_on_submit():
-        message = Message(recipient_id=user.id, body=form.body.data)
-        current_user.sent_messages.append(message)
-
-        db.session.add(current_user)
-        db.session.commit()
-        return redirect(url_for('chat_with', username=user.username))
-
     messages = Message.query.filter((Message.sender_id == current_user.id) &
                                     (Message.recipient_id == user.id) |
                                     (Message.recipient_id == current_user.id) &
                                     (Message.sender_id == user.id)).order_by(
                                         Message.created_at).all()
 
-    return render_template('chat-with.html', user=user, messages=messages, form=form)
+    return render_template('chat.html', user=user, messages=messages, form=form)
+
+
+session_ids = {}
+
+
+@socketio.on('connect', namespace='/chat')
+@authenticated_only
+def on_connect():
+    session_ids[current_user.username] = request.sid
+
+
+@socketio.on('disconnect', namespace='/chat')
+@authenticated_only
+def on_disconnect():
+    del session_ids[current_user.username]
+
+
+@socketio.on('message', namespace='/chat')
+@authenticated_only
+def on_message(data):
+    recipient_username = data.get('recipient', '')
+    body = data.get('body', '')
+
+    if recipient_username and body:
+        recipient = User.query.filter_by(username=recipient_username).first()
+
+        # Create a new message.
+        message = Message(sender_id=current_user.id, recipient_id=recipient.id, body=body)
+        db.session.add(message)
+        db.session.commit()
+
+        # Create a response.
+        response = {
+            'type': 'update',
+            'data': {
+                'sender': {
+                    'username': message.sender.username,
+                    'imageUrl': message.sender.image_url,
+                },
+                'recipient': {
+                    'username': message.recipient.username,
+                    'imageUrl': message.recipient.image_url
+                },
+                'body': message.body,
+                'createdAt': message.formatted_created_at,
+            }
+        }
+
+        # Emit events.
+        emit('message', response)
+        emit('message', response, room=session_ids.get(recipient.username))
