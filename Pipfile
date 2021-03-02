@@ -13,9 +13,11 @@ flask-socketio   = "*"
 eventlet         = "*"
 python-dotenv    = "*"
 bootstrap-flask  = "*"
+flask-moment = "*"
 
 [dev-packages]
 pytest = "*"
+faker = "*"
 
 [requires]
 python_version = "3.9"

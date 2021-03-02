@@ -2,7 +2,9 @@ from datetime import datetime
 
 from flask import url_for
 from flask_login import UserMixin
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.associationproxy import association_proxy
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
 
@@ -140,7 +142,27 @@ class User(UserMixin, db.Model):
         # TODO: BAD!
         return self.friends1 + self.friends2
 
-    def get_friends(self):
-        users1 = db.session.query(Friendship.user2).filter(Friendship.user1 == self)
-        users2 = db.session.query(Friendship.user1).filter(Friendship.user2 == self)
-        return users1.union(users2).all()
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
+    # def get_friends(self):
+    #     users1 = db.session.query(Friendship.user2).filter(Friendship.user1 == self)
+    #     users2 = db.session.query(Friendship.user1).filter(Friendship.user2 == self)
+    #     return users1.union(users2).all()
+
+    @classmethod
+    def generate_fake(cls, count=100):
+        from faker import Faker
+        fake = Faker()
+
+        for i in range(count):
+            user = cls(username=fake.user_name(), about=fake.paragraph())
+            user.set_password('pass')
+            db.session.add(user)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()

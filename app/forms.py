@@ -19,12 +19,11 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password',
                              validators=[DataRequired(),
                                          Length(min=8, max=128)])
-    confirm_password = PasswordField('Confirm Password',
-                                     validators=[
-                                         DataRequired(),
-                                         EqualTo('password',
-                                                 message='Passwords do not match.')
-                                     ])
+    password2 = PasswordField('Confirm Password',
+                              validators=[
+                                  DataRequired(),
+                                  EqualTo('password', message='Passwords do not match.')
+                              ])
     submit = SubmitField('Create account')
 
     def validate_username(self, field):

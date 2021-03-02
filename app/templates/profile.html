@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block title %} Social • {{ user.username }} {% endblock %}
 
 {% block content %}
@@ -29,106 +30,114 @@
         {% endif %}
       </div>
     </div>
+
     <div class="card ml-3 w-50 p-3">
       <h4>About</h2>
       <p id="user-about">{{ user.about }}</p>
-      <button id="user-about-edit" class="btn btn-primary" style="width: 30%;">Edit</button>
+      {% if current_user == user %}
+        <button id="user-about-edit" class="btn btn-primary mt-2" style="max-width: 100px;">Edit</button>
+      {% endif %}
+      <p class="mt-auto align-self-end mb-0">Joined: {{ moment(user.created_at).fromNow() }}</p>
     </div>
   </div>
 
 {% if user == current_user or user in current_user.friends %}
-  <h2>Friends</h2>
-  <ul class="list-group">
-    {% if user.friends %}
+  <div class="my-3">
+    <h2>Friends</h2>
+    <ul class="list-group">
+      {% if user.friends %}
 
-      {% for friend in user.friends %}
-        <li class="list-group-item d-flex align-items-center">
-          <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image" />
-          <a href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
+        {% for friend in user.friends %}
+          <li class="list-group-item d-flex align-items-center">
+            <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image" />
+            <a href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
 
-          {% if user == current_user %}
-            <form action="{{ url_for('delete_friend', username=friend.username) }}"
-              method="post" class="ml-auto">
-              <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
-          {% endif %}
+            {% if user == current_user %}
+              <form action="{{ url_for('delete_friend', username=friend.username) }}"
+                method="post" class="ml-auto">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+            {% endif %}
 
-        </li>
-      {% endfor %}
+          </li>
+        {% endfor %}
 
-    {% else %}
-      <li class="list-group-item">No Friends</li>
-    {% endif %}
-  </ul>
+      {% else %}
+        <li class="list-group-item">No Friends</li>
+      {% endif %}
+    </ul>
+  </div>
 {% endif %}
 
 {% if user == current_user %}
-  <h2>Friendship Requests</h2>
-  <ul class="list-group">
-    {% if user.aspiring_friends[:]  %}
+  <div class="my-3">
+    <h2>Friendship Requests</h2>
+    <ul class="list-group">
+      {% if user.aspiring_friends[:]  %}
 
-      {% for friend in user.aspiring_friends %}
-        <li class="list-group-item d-flex align-items-center">
-          <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image" />
-          <a href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
+        {% for friend in user.aspiring_friends %}
+          <li class="list-group-item d-flex align-items-center">
+            <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image" />
+            <a href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
 
-          <form action="{{ url_for('accept_friend', username=friend.username) }}"
-            method="post" class="ml-auto">
-            <button type="submit" class="btn btn-success">Accept</button>
-          </form>
+            <form action="{{ url_for('accept_friend', username=friend.username) }}"
+              method="post" class="ml-auto">
+              <button type="submit" class="btn btn-success">Accept</button>
+            </form>
 
-          <form action="{{ url_for('refuse_friend', username=friend.username) }}" method="post">
-            <button type="submit" class="btn btn-danger">Refuse</button>
-          </form>
+            <form action="{{ url_for('refuse_friend', username=friend.username) }}" method="post">
+              <button type="submit" class="btn btn-danger">Refuse</button>
+            </form>
 
-        </li>
-      {% endfor %}
+          </li>
+        {% endfor %}
 
-    {% else %}
-      <li class="list-group-item">No Friendship requests</li>
-    {% endif %}
-  </ul>
+      {% else %}
+        <li class="list-group-item">No Friendship requests</li>
+      {% endif %}
+    </ul>
+  </div>
 {% endif %}
 
 {% endblock %}
 
 {% block scripts %}
-<script>
-  const edit = document.querySelector('#user-about-edit');
+  <script>
+    const edit = document.querySelector('#user-about-edit');
 
-  edit.onclick = () => {
-    const about = document.querySelector('#user-about');
-    const textarea = document.querySelector('#user-about-textarea') ?? document.createElement('textarea');
-    if (edit.innerText.toLowerCase() == 'save') {
-      // save new about.
-      fetch('/update-about', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({'about': textarea.value})
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.about) {
+    edit.onclick = function () {
+      const about = document.querySelector('#user-about');
+      const textarea = document.querySelector('#user-about-textarea') ?? document.createElement('textarea');
+
+      if (this.innerText.toLowerCase() == 'save') {
+        fetch('/update-about', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({'about': textarea.value})
+        })
+        .then(res => res.json())
+        .then(data => {
+          textarea.remove();
+
           const about = document.createElement('p');
           about.id = 'user-about';
           about.innerText = data.about;
-          edit.parentNode.insertBefore(about, edit);
-          textarea.remove();
-          edit.innerText = 'Edit';
-        }
-      })
-    } else {
-      textarea.id = 'user-about-textarea';
-      textarea.cols = 30;
-      textarea.rows = 5;
-      textarea.defaultValue = about.innerText;
-      // insert textarea.
-      about.parentNode.insertBefore(textarea, about.nextSibling);
-      about.remove();
-      edit.innerText = 'Save';
+
+          this.parentNode.insertBefore(about, this);
+          this.innerText = 'Edit';
+        })
+      } else {
+        textarea.id = 'user-about-textarea';
+        textarea.cols = 30;
+        textarea.rows = 5;
+        textarea.style.resize = 'none';
+        textarea.defaultValue = about.innerText;
+
+        about.parentNode.insertBefore(textarea, about.nextSibling);
+        about.remove();
+
+        this.innerText = 'Save';
+      }
     }
-  }
-</script>
+  </script>
 {% endblock %}

@@ -2,6 +2,7 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_moment import Moment
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 
@@ -11,6 +12,7 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bootstrap = Bootstrap(app)
+moment = Moment(app)
 socketio = SocketIO(app)
 
 login_manager = LoginManager()
@@ -27,7 +29,8 @@ def load_user(user_id):
 
 @app.shell_context_processor
 def make_context():
+    ''' Auto-import these in  'flask shell' command. '''
     return {'db': db, 'User': User}
 
 
-from . import views
+from . import views  # noqa: F401

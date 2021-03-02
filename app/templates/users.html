@@ -3,12 +3,16 @@
 {% block title %} Social • Users {% endblock %}
 
 {% block content %}
-  {% if not users %}
-    <h1>No users in the database.</h1>
+  {% if not pagination.items %}
+    <div class="container d-flex flex-column justify-content-center text-center" style="height: 90%;">
+      <h2 class="text-center">No users in the database.</h2>
+    </div>
   {% else %}
+
     <h1>Users</h1>
+
     <ul class="list-group">
-      {% for user in users %}
+      {% for user in pagination.items %}
         <li class="list-group-item d-flex align-items-center">
 
           <img class="rounded" width="75" height="75" src="{{ user.image_url }}" alt="user's image">
@@ -23,5 +27,38 @@
         </li>
       {% endfor %}
     </ul>
+
+    <ul class="pagination pagination-sm justify-content-center mt-3">
+
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link"
+           href="{% if pagination.has_prev %}{{ url_for('users', page=pagination.page-1) }}{% else %}#{% endif %}">
+          &laquo;
+        </a>
+      </li>
+
+      {% for page in pagination.iter_pages() %}
+
+        {% if page %}
+          <li class="page-item {% if page == pagination.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('users', page=page) }}">{{ page }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#">&hellip;</a>
+          </li>
+        {% endif %}
+
+      {% endfor %}
+
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        <a class="page-link"
+           href="{% if pagination.has_next %}{{ url_for('users', page=pagination.page+1) }}{% else %}#{% endif %}">
+          &raquo;
+        </a>
+      </li>
+
+    </ul>
+
   {% endif %}
 {% endblock %}

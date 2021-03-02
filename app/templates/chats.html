@@ -3,10 +3,15 @@
 {% block title %} Social • Chats {% endblock %}
 
 {% block content %}
-  <h1>Chats</h1>
   {% if not current_user.friends %}
-    <h1>You don't have any friends to chat with :(</h1>
+    <div class="container d-flex flex-column justify-content-center text-center" style="height: 90%;">
+      <h2>You don't have any friends to chat with :(</h1>
+      <p>
+        <a href="{{ url_for('users') }}">Click here</a> to make new friends.
+      </p>
+    </div>
   {% else %}
+    <h1>Chats</h1>
     <ul class="list-group">
     {% for friend in current_user.friends %}
       <li class="list-group-item d-flex align-items-center">

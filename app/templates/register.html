@@ -1,22 +1,28 @@
 {% extends 'base.html' %}
+
 {% from "bootstrap/form.html" import render_form %}
 
 {% block title %} Social • Register {% endblock %}
 
 {% block content %}
-<div class="container d-flex" style="height: 90%;">
-  <div class="container align-self-center">
-    <h1 class="text-center">Register</h1>
-    {{ render_form(form, url_for('register'), button_style='success', novalidate=True) }}
-    <p class="text-center">Already have an account?
-      <a href="{{ url_for('login') }}">Click here</a>
-    </p>
+  <div class="container d-flex flex-column justify-content-center" style="height: 90%; max-width: 375px;">
+
+      <h1 class="text-center">Register</h1>
+
+      {{ render_form(form,
+                     url_for('register'),
+                     button_style='success',
+                     novalidate=True,
+                     extra_classes='my-1.5') }}
+
+      <p class="text-center mt-3">Already have an account?
+        <a href="{{ url_for('login') }}">Click here</a>
+      </p>
+
   </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
-  {{ super() }}
   <script>
     function insertAfter(element, what) {
       element.parentNode.insertBefore(what, element.nextSibling);
@@ -24,10 +30,10 @@
 
     const username = document.querySelector('#username');
     const password = document.querySelector('#password');
-    const password2 = document.querySelector('#confirm_password');
+    const password2 = document.querySelector('#password2');
 
-    username.onkeyup = () => {
-      fetch(`/check-unique?username=${username.value}`)
+    username.onkeyup = function () {
+      fetch(`/check-unique?username=${this.value}`)
       .then(res => res.json())
       .then(data => {
         const error = document.querySelector('#username-helper') ?? document.createElement('span');
@@ -42,9 +48,9 @@
       })
     }
 
-    password.onblur = () => {
+    password.onblur = function () {
       const error = document.querySelector('#password-helper') ?? document.createElement('span');
-      if (password.value.length < 8) {
+      if (this.value.length < 8) {
         error.id = 'password-helper';
         error.innerText = 'Password must have at least 8 characters.'
         error.className = 'text-danger';
@@ -54,9 +60,9 @@
       }
     }
 
-    password2.onblur = () => {
+    password2.onblur = function () {
       const error = document.querySelector('#confirm-password-helper') ?? document.createElement('span');
-      if (password2.value !== password.value) {
+      if (this.value !== password.value) {
         error.id = 'confirm-password-helper';
         error.innerText = 'Password do not match.'
         error.className = 'text-danger';

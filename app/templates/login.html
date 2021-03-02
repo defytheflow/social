@@ -1,16 +1,23 @@
 {% extends "base.html" %}
+
 {% from "bootstrap/form.html" import render_form %}
 
 {% block title %} Social • Login {% endblock %}
 
 {% block content %}
-<div class="container d-flex" style="height: 90%;">
-  <div class="container align-self-center">
+  <div class="container d-flex flex-column justify-content-center" style="height: 90%; max-width: 375px;">
+
     <h1 class="text-center">Login</h1>
-    {{ render_form(form, url_for('login'), button_style='success', novalidate=True) }}
-    <p class="text-center">Don't have an account?
+
+    {{ render_form(form,
+                   url_for('login'),
+                   button_style='success',
+                   novalidate=True,
+                   extra_classes='my-1.5') }}
+
+    <p class="text-center mt-3">Don't have an account?
       <a href="{{ url_for('register') }}">Click here</a>
     </p>
+
   </div>
-</div>
 {% endblock %}
