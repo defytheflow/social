@@ -192,9 +192,14 @@ def delete_friend(username):
 @app.route('/users')
 @login_required
 def users():
+    username = request.args.get('username',)
     page = request.args.get('page', 1, type=int)
-    pagination = User.query.filter(User.username != current_user.username).paginate(
-        page, per_page=10, error_out=False)
+
+    qs = User.query.filter(User.username != current_user.username)
+    if username is not None:
+        qs = qs.filter(User.username.contains(username))
+
+    pagination = qs.paginate(page, per_page=10, error_out=False)
     return render_template('users.html', pagination=pagination)
 
 
@@ -220,6 +225,13 @@ def chat(username):
                                         Message.created_at).all()
 
     return render_template('chat.html', user=user, messages=messages, form=form)
+
+
+@app.route('/messages/<int:message_id>', methods=['DELETE'])
+@login_required
+def delete_message(message_id):
+    Message.query.filter(Message.id == message_id).delete()
+    return {}, 204
 
 
 session_ids = {}
@@ -265,9 +277,11 @@ def on_message(data):
                 },
                 'body': message.body,
                 'createdAt': message.formatted_created_at,
+                'id': message.id,
             }
         }
 
         # Emit events.
         emit('message', response)
-        emit('message', response, room=session_ids.get(recipient.username))
+        if (recipient_room := session_ids.get(recipient.username)) is not None:
+            emit('message', response, room=recipient_room)

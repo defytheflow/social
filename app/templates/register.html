@@ -5,8 +5,9 @@
 {% block title %} Social • Register {% endblock %}
 
 {% block content %}
-  <div class="container d-flex flex-column justify-content-center" style="height: 90%; max-width: 375px;">
-
+  <div
+    class="container d-flex flex-column justify-content-center"
+    style="max-width: 375px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
       <h1 class="text-center">Register</h1>
 
       {{ render_form(form,
@@ -18,7 +19,6 @@
       <p class="text-center mt-3">Already have an account?
         <a href="{{ url_for('login') }}">Click here</a>
       </p>
-
   </div>
 {% endblock %}
 

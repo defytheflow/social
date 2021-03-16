@@ -1,41 +1,51 @@
 {% extends 'base.html' %}
+
 {% from "bootstrap/form.html" import render_form %}
 
 {% block title %}  Social • chat with {{ user.username }} {% endblock %}
 
 {% block content %}
-<h1>Chat with {{ user.username }}</h1>
-<ul id='messages-list' class="list-group">
-  {% for message in messages %}
-  <li class="list-group-item">
-    <div class="card">
-      <div
-        class="card-header"
-        style="{% if message.sender == current_user %} text-align: right; {% endif %}"
-      >
-        {% if message.sender == current_user %} You {% else %}
-        <img
-          width="35"
-          height="35"
-          style="border-radius: 100px"
-          src="{{ message.sender.image_url }}"
-          alt="..."
-        />
-        {{ message.sender.username }} {% endif %}
-      </div>
-      <div
-        class="card-body"
-        style="{% if message.sender == current_user %}text-align: right;{% endif %}"
-      >
-        <p class="card-text">{{ message.body }}</p>
-        <span style="float: right">{{ message.formatted_created_at }}</span>
-      </div>
-    </div>
-  </li>
-  {% endfor %}
-</ul>
-
-{{ render_form(form, button_style='success', id='message-create-form', render_kw={'autocomplete': 'off'}) }}
+  <div class="mt-3">
+    <ul id='messages-list' class="list-group">
+      {% for message in messages %}
+      <li class="list-group-item">
+        <div class="card">
+          <div
+            class="card-header d-flex justify-content-end"
+            style="{% if message.sender == current_user %} text-align: right; {% endif %}"
+          >
+            {% if message.sender == current_user %}
+              <button
+                id="message-delete-btn"
+                class="btn btn-danger mr-auto"
+                data-message-id="{{ message.id }}"
+                style="border-radius: 100px; font-size: .875rem; padding: 0 .5rem;"
+                >&times;</button>
+              You
+            {% else %}
+              <img
+                width="35"
+                height="35"
+                style="border-radius: 100px"
+                src="{{ message.sender.image_url }}"
+                alt="..."
+              />
+              <span class="mr-auto">{{ message.sender.username }}</span>
+            {% endif %}
+          </div>
+          <div
+            class="card-body"
+            style="{% if message.sender == current_user %}text-align: right;{% endif %}"
+          >
+            <p class="card-text">{{ message.body }}</p>
+            <span style="float: right">{{ message.formatted_created_at }}</span>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {{ render_form(form, button_style='success', id='message-create-form', render_kw={'autocomplete': 'off'}) }}
+  </div>
 {% endblock %}
 
 {% block scripts %}
@@ -45,7 +55,24 @@
     crossorigin="anonymous"
   ></script>
   <script type="text/javascript">
+    function handleDeleteClick(e) {
+      const messageId = e.target.getAttribute('data-message-id');
+      fetch(`/messages/${messageId}`, {
+        method: 'DELETE',
+        headers: { 'Content-type': 'application/json'}
+      })
+      .then(res => {
+        if (res.status === 204) {
+          const el = e.target.closest('.list-group-item')
+          el.remove();
+        }
+      })
+    }
+
     (function () {
+      const deleteButtons = document.querySelectorAll('#message-delete-btn');
+      deleteButtons.forEach(btn => btn.addEventListener('click', handleDeleteClick));
+
       const socket = io('/chat');
 
       const form = document.querySelector('#message-create-form');
@@ -69,12 +96,21 @@
             card.className = 'card';
 
             const cardHeader = document.createElement('div');
-            cardHeader.className = 'card-header';
+            cardHeader.className = 'card-header d-flex justify-content-end';
             if (e.data.sender.username == current_username) {
               cardHeader.style.textAlign = 'right';
             }
 
             if (e.data.sender.username == current_username) {
+              const deleteBtn = document.createElement('button');
+              deleteBtn.id = 'message-detele-btn';
+              deleteBtn.className = 'btn btn-danger mr-auto';
+              deleteBtn.style = 'border-radius: 100px; font-size: .875rem; padding: 0 .5rem;'
+              deleteBtn.appendChild(document.createTextNode('×'));
+              deleteBtn.addEventListener('click', handleDeleteClick);
+              deleteBtn.setAttribute('data-message-id', e.data.id);
+
+              cardHeader.appendChild(deleteBtn);
               cardHeader.appendChild(document.createTextNode('You'));
             } else {
               const img = document.createElement('img');
