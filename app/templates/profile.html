@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from "macros.html" import render_friend %}
+
 {% block title %} Social • {{ user.username }} {% endblock %}
 
 {% block content %}
@@ -9,21 +11,16 @@
       <div class="card-body">
         <h5 class="card-title">{{ user.username }}</h5>
         <p class="card-text"></p>
-
         {% if user != current_user %}
-
           {% if user in current_user.desired_friends %}
             <span class='alert alert-secondary'>Friendship request sent</span>
-
           {% elif user not in current_user.friends %}
             <form action="{{ url_for('request_friend', username=user.username) }}" method="post">
               <button type="submit" class="btn btn-success">Add friend</button>
             </form>
-
           {% else %}
             <a href="{{ url_for('chat', username=user.username) }}" class="btn btn-primary">Chat</a>
           {% endif %}
-
         {% else %}
           <a class="btn btn-success" href="{{ url_for('change_avatar')}}">Change avatar</a>
         {% endif %}
@@ -42,25 +39,21 @@
 
 {% if user == current_user or user in current_user.friends %}
   <div class="my-3">
-    <h2>Friends</h2>
+    <h3>Friends ({{ user.friends|length }})</h3>
     <ul class="list-group">
       {% if user.friends %}
-
         {% for friend in user.friends %}
-          <li class="list-group-item d-flex align-items-center">
-            <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image" />
-            <a href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
-
+          {% call render_friend(friend) %}
             {% if user == current_user %}
-              <form action="{{ url_for('delete_friend', username=friend.username) }}"
-                method="post" class="ml-auto">
+              <form
+                method="post"
+                action="{{ url_for('delete_friend', username=friend.username) }}"
+                class="ml-auto">
                 <button type="submit" class="btn btn-danger">Delete</button>
               </form>
             {% endif %}
-
-          </li>
+          {% endcall %}
         {% endfor %}
-
       {% else %}
         <li class="list-group-item">No Friends</li>
       {% endif %}
@@ -70,29 +63,39 @@
 
 {% if user == current_user %}
   <div class="my-3">
-    <h2>Friendship Requests</h2>
+    <h3>Friendship Requests</h3>
     <ul class="list-group">
       {% if user.aspiring_friends[:]  %}
-
         {% for friend in user.aspiring_friends %}
-          <li class="list-group-item d-flex align-items-center">
-            <img class="rounded" width="75" height="75" src="{{ friend.image_url }}" alt="user's image" />
-            <a href="{{ friend.get_profile_url() }}">{{ friend.username }}</a>
-
-            <form action="{{ url_for('accept_friend', username=friend.username) }}"
-              method="post" class="ml-auto">
-              <button type="submit" class="btn btn-success">Accept</button>
-            </form>
-
-            <form action="{{ url_for('refuse_friend', username=friend.username) }}" method="post">
-              <button type="submit" class="btn btn-danger">Refuse</button>
-            </form>
-
-          </li>
+          {% call render_friend(friend) %}
+              <form
+                class="ml-auto"
+                method="post"
+                action="{{ url_for('accept_friend', username=friend.username) }}">
+                <button type="submit" class="btn btn-success">Accept</button>
+              </form>
+              <form
+                method="post"
+                action="{{ url_for('refuse_friend', username=friend.username) }}">
+                <button type="submit" class="btn btn-danger">Refuse</button>
+              </form>
+          {% endcall %}
         {% endfor %}
-
       {% else %}
         <li class="list-group-item">No Friendship requests</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="my-3">
+    <h3>Sent Friendship Requests</h3>
+    <ul class="list-group">
+      {% if user.desired_friends[:]  %}
+        {% for friend in user.desired_friends %}
+          {{ render_friend(friend) }}
+        {% endfor %}
+      {% else %}
+        <li class="list-group-item">No Sent Friendship requests</li>
       {% endif %}
     </ul>
   </div>
@@ -101,6 +104,7 @@
 {% endblock %}
 
 {% block scripts %}
+  {{ super() }}
   <script>
     const edit = document.querySelector('#user-about-edit');
 

@@ -10,6 +10,11 @@
 
     {% block styles %}
       {{ bootstrap.load_css() }}
+      <link
+        rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ"
+        crossorigin="anonymous">
     {% endblock %}
 
     <title>{% block title %}{% endblock %}</title>
@@ -19,19 +24,35 @@
   </head>
   <body>
     <header>
-      <nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-end">
-        <h4 class="mr-auto text-primary mb-0">
-          {{ render_nav_item('profile',  'Adaline', username=current_user.username) }}
-        </h3>
+      <nav class="navbar navbar-expand-md navbar-dark bg-dark">
         {% if current_user.is_authenticated %}
-          {{ render_nav_item('profile',  'My Profile', username=current_user.username) }}
-          {{ render_nav_item('users', 'Users') }}
-          {{ render_nav_item('chats', 'Chats') }}
-          {{ render_nav_item('logout', 'Logout') }}
+          <a href="{{ url_for('profile', username=current_user.username) }}" class="navbar-brand h4 mb-0">Adaline</a>
         {% else %}
-          {{ render_nav_item('login', 'Login') }}
-          {{ render_nav_item('register', 'Sign up') }}
+          <a href="{{ url_for('login') }}" class="navbar-brand h4 mb-0">Adaline</a>
         {% endif %}
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <div class="navbar-nav">
+            {% if current_user.is_authenticated %}
+              {{ render_nav_item('profile',  'My Profile', username=current_user.username) }}
+              {{ render_nav_item('users', 'Users') }}
+              {{ render_nav_item('chats', 'Chats') }}
+              {{ render_nav_item('logout', 'Logout') }}
+            {% else %}
+              {{ render_nav_item('login', 'Login') }}
+              {{ render_nav_item('register', 'Sign up') }}
+            {% endif %}
+          </div>
+        </div>
       </nav>
     </header>
 
